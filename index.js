@@ -94,9 +94,11 @@ app.get('/verify-code/:code', async (req, res) => {
 
 app.get('/generate-test-code', async (req, res) => {
   const code = Math.random().toString(36).substr(2, 7);
+  console.log('code: ',code);
   const expiration = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hour from now
   const newCode = new AccessCode({ code, expiration });
   await newCode.save();
+  console.log('newCode: ',newCode);
   res.json({ code });
 });
 
