@@ -11,6 +11,8 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration
 app.use(cors({
   origin: 'http://localhost:5173', // Your frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
   credentials: true,
 }));
 
@@ -74,6 +76,7 @@ app.post('/execute-payment', (req, res) => {
 
 app.get('/verify-code/:code', async (req, res) => {
   const { code } = req.params;
+  console.log('code: ', code);
   const accessCode = await AccessCode.findOne({ code });
 
   if (accessCode && new Date() < new Date(accessCode.expiration)) {
