@@ -8,20 +8,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
 app.use(cors({
-  origin: 'http://localhost:5173', // Ensure this matches your frontend URL exactly
-  optionsSuccessStatus: 200,
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true,
 }));
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch((error) => {
-  console.error('Error connecting to MongoDB:', error);
-});
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const AccessCodeSchema = new mongoose.Schema({
   code: String,
@@ -55,7 +48,6 @@ app.post('/create-payment', (req, res) => {
 
   paypal.payment.create(create_payment_json, (error, payment) => {
     if (error) {
-      console.error('Error creating PayPal payment:', error);
       res.status(500).send(error);
     } else {
       res.json({ id: payment.id });
@@ -69,7 +61,6 @@ app.post('/execute-payment', (req, res) => {
 
   paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
     if (error) {
-      console.error('Error executing PayPal payment:', error);
       res.status(500).send(error);
     } else {
       const code = Math.random().toString(36).substr(2, 7);
@@ -93,11 +84,8 @@ app.get('/verify-code/:code', async (req, res) => {
 });
 
 app.get('/generate-test-code', async (req, res) => {
-  console.log('i made it here');
   const code = Math.random().toString(36).substr(2, 7);
   const expiration = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hour from now
-  console.log(code);
-  console.log(expiration);
   const newCode = new AccessCode({ code, expiration });
   await newCode.save();
   res.json({ code });
