@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Ensure this matches your frontend URL exactly
+  origin: 'http://localhost:5173', // Ensure this matches your frontend URL exactly
   optionsSuccessStatus: 200,
 }));
 
@@ -93,12 +93,13 @@ app.get('/verify-code/:code', async (req, res) => {
 });
 
 app.get('/generate-test-code', async (req, res) => {
+  console.log('i made it here');
   const code = Math.random().toString(36).substr(2, 7);
-  console.log('code: ',code);
   const expiration = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hour from now
+  console.log(code);
+  console.log(expiration);
   const newCode = new AccessCode({ code, expiration });
   await newCode.save();
-  console.log('newCode: ',newCode);
   res.json({ code });
 });
 
