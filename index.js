@@ -9,12 +9,19 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration
+const allowedOrigins = ['http://localhost:5173', 'https://https://cm-frontend.vercel.app/'];
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Your frontend URL
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-  credentials: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
 }));
+
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
