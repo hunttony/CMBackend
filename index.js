@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const paypal = require('paypal-rest-sdk');
 const cors = require('cors');
+const aws = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
 require('dotenv').config();
 
 const app = express();
@@ -22,6 +25,22 @@ app.use(cors({
   },
 }));
 
+// AWS S3 configuration
+const s3 = new aws.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_BUCKET_NAME,
+    acl: 'public-read', // Allow public read access to files
+    key: function (req, file, cb) {
+      cb(null, Date.now().toString() + '-' + file.originalname); // Unique key for each uploaded file
+    },
+  }),
+});
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -106,6 +125,12 @@ app.get('/generate-test-code', async (req, res) => {
   const newCode = new AccessCode({ code, expiration });
   await newCode.save();
   res.json({ code });
+});
+
+// Route for uploading profile images to S3
+app.post('/upload-profile-image', upload.single('profileImage'), (req, res) => {
+  // Upon successful upload, send back the URL of the uploaded image
+  res.json({ imageUrl: req.file.location });
 });
 
 app.listen(PORT, () => {
