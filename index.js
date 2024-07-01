@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 
-const allowedOrigins = ['http://localhost:5173'];
+const allowedOrigins = ['http://localhost:5173', 'https://cm-frontend.vercel.app'];
 app.use(cors({
   credentials: true,
   origin: function (origin, callback) {
@@ -110,7 +110,7 @@ app.use(session({
   store: store,
   cookie: {
     maxAge: 3600000, // 1 hour
-    secure: false, // Set to true if using HTTPS
+    secure: process.env.NODE_ENV === 'production',
   },
 }));
 
